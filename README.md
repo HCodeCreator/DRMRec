@@ -5,7 +5,7 @@
 ## 🚀 Quick Start
 
 ```python
-bash scripts/run_tiktok
+bash scripts/run_tiktok.sh
 ```
 
 
