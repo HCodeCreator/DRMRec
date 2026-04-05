@@ -101,10 +101,10 @@ class Coach:
 			self.denoise_model_audio = Denoise(in_dims, out_dims, args.d_emb_size, norm=args.norm).cuda()
 			self.denoise_opt_audio = torch.optim.Adam(self.denoise_model_audio.parameters(), lr=args.lr, weight_decay=0)
 
-		self.ppo_image = MADR(self.denoise_model_image, lr=args.rl_lr, gamma=args.gamma, eps_clip=args.eps_clip)
-		self.ppo_text = MADR(self.denoise_model_text, lr=args.rl_lr, gamma=args.gamma, eps_clip=args.eps_clip)
+		self.madr_image = MADR(self.denoise_model_image, lr=args.rl_lr, gamma=args.gamma, eps_clip=args.eps_clip)
+		self.madr_text = MADR(self.denoise_model_text, lr=args.rl_lr, gamma=args.gamma, eps_clip=args.eps_clip)
 		if args.data == 'tiktok':
-			self.ppo_audio = MADR(self.denoise_model_audio, lr=args.rl_lr, gamma=args.gamma, eps_clip=args.eps_clip)
+			self.madr_audio = MADR(self.denoise_model_audio, lr=args.rl_lr, gamma=args.gamma, eps_clip=args.eps_clip)
 		self.rl_initialized = True
 
 	def normalizeAdj(self, mat):
@@ -404,20 +404,20 @@ class Coach:
 			timesteps_image_cat = torch.cat(timesteps_image)
 
 			if states_image_cat.numel() == 0:
-				log('Warning: Empty states for image modality, skipping PPO update')
+				log('Warning: Empty states for image modality, skipping MADR update')
 			else:
 				values_image = torch.zeros_like(states_image_cat[:, 0], device=states_image_cat.device)
 
 				rewards_image = reward.repeat(len(values_image))
 
-				self.ppo_image.update(
+				self.madr_image.update(
 					states_image_cat,
 					actions_image_cat,
 					old_log_probs_image_cat,
 					rewards_image,
 					values_image,
 					timesteps_image_cat,
-					epochs=args.ppo_epochs
+					epochs=args.madr_epochs
 				)
 
 			states_text_cat = torch.cat(states_text)
@@ -426,19 +426,19 @@ class Coach:
 			timesteps_text_cat = torch.cat(timesteps_text)
 
 			if states_text_cat.numel() == 0:
-				log('Warning: Empty states for text modality, skipping PPO update')
+				log('Warning: Empty states for text modality, skipping MADR update')
 			else:
 				values_text = torch.zeros_like(states_text_cat[:, 0], device=states_text_cat.device)
 
 				rewards_text = reward.repeat(len(values_text))
-				self.ppo_text.update(
+				self.madr_text.update(
 					states_text_cat,
 					actions_text_cat,
 					old_log_probs_text_cat,
 					rewards_text,
 					values_text,
 					timesteps_text_cat,
-					epochs=args.ppo_epochs
+					epochs=args.madr_epochs
 				)
 
 			if args.data == 'tiktok':
@@ -448,19 +448,19 @@ class Coach:
 				timesteps_audio_cat = torch.cat(timesteps_audio)
 
 				if states_audio_cat.numel() == 0:
-					log('Warning: Empty states for audio modality, skipping PPO update')
+					log('Warning: Empty states for audio modality, skipping MADR update')
 				else:
 					values_audio = torch.zeros_like(states_audio_cat[:, 0], device=states_audio_cat.device)
 
 					rewards_audio = reward.repeat(len(values_audio))
-					self.ppo_audio.update(
+					self.madr_audio.update(
 						states_audio_cat,
 						actions_audio_cat,
 						old_log_probs_audio_cat,
 						rewards_audio,
 						values_audio,
 						timesteps_audio_cat,
-						epochs=args.ppo_epochs
+						epochs=args.madr_epochs
 					)
 			log('RL fine-tuning completed')
 
