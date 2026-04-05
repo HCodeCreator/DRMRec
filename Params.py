@@ -49,7 +49,7 @@ def ParseArgs():
 	parser.add_argument('--weight_diff_res', default=1.0, type=float, help='')
 	parser.add_argument('--weight_rl_res', default=1.0, type=float, help='')
 	parser.add_argument('--eps_clip', default=0.2, type=float, help='')
-	parser.add_argument('--ppo_epochs', default=5, type=int, help='')
+	parser.add_argument('--madr_epochs', default=5, type=int, help='')
 	parser.add_argument('--cross_feat_weight', type=float, default=0.3)
 
 	return parser.parse_args()
